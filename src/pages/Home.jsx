@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { read } from "xlsx";
 
 const Home = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [topicList, setTopicList] = useState([]);
+  const [userAnswer, setUserAnswer] = useState();
+  const xlxsData = useRef([]);
+
+  //timmer
+  const [createAt, setCreateAt] = useState();
+  const [timmer, setTimmer] = useState();
+
   //hook-from
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    // formState: { errors },
   } = useForm();
 
   //local
@@ -20,10 +27,25 @@ const Home = () => {
   //重新匯入檔案
   const handleReset = () => {
     reset();
+    setShowAnswer(false);
+    setTopicList(() => shuffle(xlxsData.current));
+  };
+
+  //Fisher-Yates Shuffle
+  const shuffle = (array) => {
+    let result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+      const randomIndex = Math.floor(Math.random() * (i + 1));
+      [result[i], result[randomIndex]] = [result[randomIndex], result[i]];
+    }
+    return result;
   };
 
   const handleFile = (e) => {
     console.log("start change File!");
+    //timmer
+
+    //reader
     const reader = new FileReader();
     fileName = e.target?.files[0].name;
     reader.readAsArrayBuffer(e.target.files[0]);
@@ -44,21 +66,20 @@ const Home = () => {
           ...list[xlsxIndex],
           id: xlsxIndex,
           title: isTitile ? value.v : list[xlsxIndex]?.title,
-          answer: isAnswer ? value.v : list[xlsxIndex]?.answer,
+          answer: isAnswer
+            ? value.v.toLocaleLowerCase()
+            : list[xlsxIndex]?.answer,
         };
       });
 
-      setTopicList(list);
+      //view data
+      xlxsData.current = list;
+      setTopicList(() => shuffle(xlxsData.current));
     };
   };
 
-  //test area
-  const handleText = (e) => {
-    const data = JSON.stringify([e.target.value]);
-    localStorage.setItem("randomXLXS", data);
-  };
-
   const onSubmit = (data) => {
+    if (!Object.entries(data).length) return;
     //無題目長度 return
     // 至頂
     window.scrollTo({
@@ -66,11 +87,13 @@ const Home = () => {
       top: 0,
       behavior: "smooth",
     });
-    //答案紀錄於local
+    //錯誤題目紀錄於local
     console.log("對答案", data);
-    //關閉input ans
+    setUserAnswer(data);
+    //
+
     //顯示對答案模式
-    setShowAnswer(false);
+    setShowAnswer(true);
   };
 
   return (
@@ -88,10 +111,7 @@ const Home = () => {
           className="file-input file-input-bordered file-input-sm w-full max-w-xs mb-2"
         />
         <div className="flex gap-2">
-          <button
-            onClick={() => setShowAnswer(false)}
-            className="btn btn-sm btn-active"
-          >
+          <button onClick={handleReset} className="btn btn-sm btn-active">
             重新測驗
           </button>
         </div>
@@ -120,7 +140,13 @@ const Home = () => {
                 <div className="my-auto p-2">{item?.title}</div>
                 {showAnswer && (
                   // success error
-                  <div className="bg-success px-6 flex justify-center items-center ml-auto text-white font-bold">
+                  <div
+                    className={`${
+                      userAnswer?.[item?.id] === item?.answer
+                        ? "bg-success"
+                        : "bg-error"
+                    }  w-[56px] flex justify-center items-center ml-auto text-white font-bold`}
+                  >
                     {item?.answer}
                   </div>
                 )}
