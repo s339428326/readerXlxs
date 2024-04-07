@@ -1,50 +1,145 @@
-import React, { useState } from 'react'
-import { read, writeFileXLSX } from "xlsx";
-
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { read } from "xlsx";
 
 const Home = () => {
-  const [topic,setTopic] = useState({
-    title:"",
-    answer:""
-  });
-  const [showList,setShowList] = useState([]);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [topicList, setTopicList] = useState([]);
+  //hook-from
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
+
+  //local
+  const localData = JSON.parse(localStorage.getItem("randomXLXS"));
+  let fileName = "";
+
+  //重新匯入檔案
+  const handleReset = () => {
+    reset();
+  };
 
   const handleFile = (e) => {
-    console.log('start change File!')
+    console.log("start change File!");
     const reader = new FileReader();
+    fileName = e.target?.files[0].name;
     reader.readAsArrayBuffer(e.target.files[0]);
 
-    reader.onload = function (e) {
-      var data = new Uint8Array(reader.result);
-      var workbook = read(data, {type: 'array'});
-      var sheet = workbook.Sheets[workbook.SheetNames[0]];
-      //-------------------------------
-      // var cell_ref = utils.encode_cell({c: 1, r: 2});
-      //
-      console.log(sheet?.['!ref'])
-      // var cell = sheet[cell_ref];
-      // console.log(cell.v);
-    }
+    reader.onload = function () {
+      const data = new Uint8Array(reader.result);
+      const workbook = read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const list = [];
 
-  }
+      Object.entries(sheet).forEach(([key, value], index) => {
+        if (index === Object.entries(sheet).length - 1) return;
+        const isTitile = key.toLocaleLowerCase().startsWith("a");
+        const isAnswer = key.toLocaleLowerCase().startsWith("b");
+        const xlsxIndex = parseInt(key.slice(1, key.length)) - 1;
+        console.log(xlsxIndex, key, value);
+        list[xlsxIndex] = {
+          ...list[xlsxIndex],
+          id: xlsxIndex,
+          title: isTitile ? value.v : list[xlsxIndex]?.title,
+          answer: isAnswer ? value.v : list[xlsxIndex]?.answer,
+        };
+      });
 
+      setTopicList(list);
+    };
+  };
+
+  //test area
+  const handleText = (e) => {
+    const data = JSON.stringify([e.target.value]);
+    localStorage.setItem("randomXLXS", data);
+  };
+
+  const onSubmit = (data) => {
+    //無題目長度 return
+    // 至頂
+    window.scrollTo({
+      left: 0,
+      top: 0,
+      behavior: "smooth",
+    });
+    //答案紀錄於local
+    console.log("對答案", data);
+    //關閉input ans
+    //顯示對答案模式
+    setShowAnswer(false);
+  };
 
   return (
-    <div className='container mx-auto'>
-      {/* Top-Input File */}
-      <section className='my-10'>
-        <h1 className='font-bold text-2xl mb-2'>隨機題目抽測</h1>
-        <input onChange={handleFile} type="file" className="file-input file-input-bordered file-input-sm w-full max-w-xs" />
+    <main className="container mx-auto">
+      <section className="my-10 border p-5 rounded-md shadow-lg sticky top-1 bg-white">
+        <div className="flex justify-between">
+          <h1 name="head" className="font-bold text-2xl mb-2">
+            隨機題目抽測
+          </h1>
+          <button className="btn btn-sm btn-active">歷史測驗結果</button>
+        </div>
+        <input
+          onChange={handleFile}
+          type="file"
+          className="file-input file-input-bordered file-input-sm w-full max-w-xs mb-2"
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowAnswer(false)}
+            className="btn btn-sm btn-active"
+          >
+            重新測驗
+          </button>
+        </div>
+
+        {/* Timmer  https://daisyui.com/components/countdown/*/}
       </section>
       {/* QA */}
       <section>
-          <div>QA:</div>
-          <div>Ans:</div>
+        <form onSubmit={handleSubmit(onSubmit)} className="mb-2">
+          {JSON.stringify(topicList)}
+          <ul className="flex flex-col gap-2 p-2">
+            {topicList.map((item, index) => (
+              <li
+                key={index}
+                className="flex rounded-md border overflow-hidden"
+              >
+                <div className="border-r p-2">
+                  <input
+                    type="text"
+                    className="input input-bordered w-full max-w-[56px] text-center"
+                    maxLength={1}
+                    disabled={showAnswer}
+                    {...register(`${item?.id}`)}
+                  />
+                </div>
+                <div className="my-auto p-2">{item?.title}</div>
+                {showAnswer && (
+                  // success error
+                  <div className="bg-success px-6 flex justify-center items-center ml-auto text-white font-bold">
+                    {item?.answer}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+          <div className="flex">
+            <button
+              className="btn btn-success btn-primary ml-auto font-bold text-white"
+              type="submit"
+            >
+              對答案
+            </button>
+          </div>
+        </form>
       </section>
-      {/* show Item */}
       <section></section>
-    </div>
-  )
-}
+    </main>
+  );
+};
 
-export default Home
+export default Home;

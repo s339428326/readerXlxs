@@ -1,3 +1,9 @@
+# 題庫隨機抽題小玩具
+
+- 可匯入xlxs檔案讀取題庫(第一欄為題目, 第二欄為答案)
+- 可對每次作答紀錄(時間, 錯誤題目)
+- 針對同樣xlxs檔名重複作答後可記錄重複錯誤題目
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
