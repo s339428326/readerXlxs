@@ -42,7 +42,7 @@ const Home = () => {
   };
 
   const handleFile = (e) => {
-    console.log("start change File!");
+    console.log("start change File! 1");
     //timmer
 
     //reader
@@ -56,10 +56,16 @@ const Home = () => {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const list = [];
 
+      //sheet
+      console.log(sheet?.["!ref"]);
+      console.log(sheet?.["!ref"].split(":"));
+      const topicChar = sheet?.["!ref"].split(":")[0][0].toLocaleLowerCase();
+      const answerChar = sheet?.["!ref"].split(":")[1][0].toLocaleLowerCase();
+
       Object.entries(sheet).forEach(([key, value], index) => {
         if (index === Object.entries(sheet).length - 1) return;
-        const isTitile = key.toLocaleLowerCase().startsWith("a");
-        const isAnswer = key.toLocaleLowerCase().startsWith("b");
+        const isTitile = key.toLocaleLowerCase().startsWith(topicChar);
+        const isAnswer = key.toLocaleLowerCase().startsWith(answerChar);
         const xlsxIndex = parseInt(key.slice(1, key.length)) - 1;
         console.log(xlsxIndex, key, value);
         list[xlsxIndex] = {
