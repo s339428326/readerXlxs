@@ -137,7 +137,7 @@ const Home = () => {
                 <div className="border-r p-2">
                   <input
                     type="text"
-                    className="input input-bordered w-full max-w-[56px] text-center"
+                    className="input input-bordered w-[56px] text-center"
                     maxLength={1}
                     disabled={showAnswer}
                     {...register(`${item?.id}`)}
