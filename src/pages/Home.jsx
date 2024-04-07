@@ -142,7 +142,8 @@ const Home = () => {
                   // success error
                   <div
                     className={`${
-                      userAnswer?.[item?.id] === item?.answer
+                      userAnswer?.[item?.id].toLocaleLowerCase() ===
+                      item?.answer
                         ? "bg-success"
                         : "bg-error"
                     }  w-[56px] flex justify-center items-center ml-auto text-white font-bold`}
