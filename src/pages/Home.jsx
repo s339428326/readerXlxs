@@ -121,7 +121,7 @@ const Home = () => {
       {/* QA */}
       <section>
         <form onSubmit={handleSubmit(onSubmit)} className="mb-2">
-          {JSON.stringify(topicList)}
+          {/* {JSON.stringify(topicList)} */}
           <ul className="flex flex-col gap-2 p-2">
             {topicList.map((item, index) => (
               <li
