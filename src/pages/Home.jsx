@@ -7,6 +7,8 @@ const Home = () => {
   const [topicList, setTopicList] = useState([]);
   const [userAnswer, setUserAnswer] = useState();
   const xlxsData = useRef([]);
+  const ENG_OPITIONS = ["A", "B", "C", "D", "E"];
+  const OX_OPITIONS = ["O", "X"];
 
   //timmer
   const [createAt, setCreateAt] = useState();
@@ -26,9 +28,14 @@ const Home = () => {
 
   //重新匯入檔案
   const handleReset = () => {
-    reset();
-    setShowAnswer(false);
-    setTopicList(() => shuffle(xlxsData.current));
+    window.scrollTo({
+      left: 0,
+      top: 0,
+      behavior: "smooth",
+    });
+    reset(); //hook empty
+    setShowAnswer(false); // disable answer view
+    setTopicList(() => shuffle(xlxsData.current)); //random topic
   };
 
   //Fisher-Yates Shuffle
@@ -114,7 +121,7 @@ const Home = () => {
         <input
           onChange={handleFile}
           type="file"
-          className="file-input file-input-bordered file-input-sm w-full max-w-xs mb-2"
+          className="file-input file-input-bordered file-input-md w-full max-w-xs mb-2"
         />
         <div className="flex gap-2">
           <button onClick={handleReset} className="btn btn-sm btn-active">
@@ -134,16 +141,36 @@ const Home = () => {
                 key={index}
                 className="flex rounded-md border overflow-hidden"
               >
+                {/* Ans. box */}
                 <div className="border-r p-2">
-                  <input
+                  {/* <input
                     type="text"
                     className="input input-bordered w-[56px] text-center"
                     maxLength={1}
                     disabled={showAnswer}
                     {...register(`${item?.id}`)}
-                  />
+                    autoFocus
+                  /> */}
+                  <select
+                    className="select select-bordered"
+                    {...register(`${item?.id}`)}
+                  >
+                    <option key={`${item?.id}-null`}></option>
+                    {item?.answer.toLocaleLowerCase() !== "o" &&
+                    item?.answer.toLocaleLowerCase() !== "x"
+                      ? ENG_OPITIONS.map((it) => (
+                          <option key={`${item?.id}-${it}`}>{it}</option>
+                        ))
+                      : OX_OPITIONS.map((it) => (
+                          <option key={`${item?.id}-${it}`}>{it}</option>
+                        ))}
+                  </select>
                 </div>
-                <div className="my-auto p-2">{item?.title}</div>
+                {/* Topic Content */}
+                <div className="my-auto p-2">
+                  <p className="max-w-[768px]">{item?.title}</p>
+                </div>
+                {/* Show Ans. area */}
                 {showAnswer && (
                   // success error
                   <div
@@ -152,9 +179,9 @@ const Home = () => {
                       item?.answer
                         ? "bg-success"
                         : "bg-error"
-                    }  w-[56px] flex justify-center items-center ml-auto text-white font-bold`}
+                    }  max-w-[56px] flex flex-1 justify-center items-center ml-auto text-white font-bold`}
                   >
-                    {item?.answer}
+                    {item?.answer.toUpperCase()}
                   </div>
                 )}
               </li>
