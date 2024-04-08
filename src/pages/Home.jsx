@@ -154,6 +154,7 @@ const Home = () => {
                   <select
                     className="select select-bordered"
                     {...register(`${item?.id}`)}
+                    disabled={showAnswer}
                   >
                     <option key={`${item?.id}-null`}></option>
                     {item?.answer.toLocaleLowerCase() !== "o" &&
