@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { read } from "xlsx";
 import { Link } from "react-router-dom";
@@ -7,7 +7,7 @@ const Home = () => {
   const ENG_OPITIONS = ["A", "B", "C", "D", "E"];
   const OX_OPITIONS = ["O", "X"];
   const [testOpition, setTestOpition] = useState({
-    topicLength: 0,
+    topicLength: "",
     disabled: false,
   });
   const [showAnswer, setShowAnswer] = useState(false);
@@ -24,9 +24,12 @@ const Home = () => {
   const {
     register,
     handleSubmit,
+    watch,
     reset,
     // formState: { errors },
   } = useForm();
+
+  const watchAllFields = watch();
 
   //local
   const localData = JSON.parse(localStorage.getItem("randomXLXS"));
@@ -36,7 +39,9 @@ const Home = () => {
   const handleReset = () => {
     reset(); //hook empty
     setShowAnswer(false); // disable answer view
-    setTopicList(() => shuffle(xlxsData.current)); //random topic
+    setTopicList(shuffle(xlxsData.current)); //random topic
+    setTestOpition((pre) => ({ ...pre, disabled: false }));
+
     window.scrollTo({
       left: 0,
       top: 0,
@@ -132,19 +137,20 @@ const Home = () => {
             type="file"
             className="file-input file-input-bordered file-input-md w-full max-w-xs mb-2"
           />
-          <label
-            onChange={(e) =>
-              setTestOpition((pre) => ({
-                ...pre,
-                topicLength: parseInt(e.target.value),
-              }))
-            }
-            className="input input-bordered flex items-center gap-2"
-          >
+          <label className="input input-bordered flex items-center gap-2">
             <input
+              onChange={(e) =>
+                setTestOpition((pre) => ({
+                  ...pre,
+                  topicLength: e.target.value
+                    ? parseInt(e.target.value)
+                    : topicList.length,
+                }))
+              }
               type="text"
               className="grow"
               placeholder="輸入題數"
+              disabled={testOpition.disabled}
               defaultValue={testOpition.topicLength}
             />
           </label>
