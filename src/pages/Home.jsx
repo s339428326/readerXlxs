@@ -179,7 +179,7 @@ const Home = () => {
               >
                 {/* Ans. box */}
                 <div className="border-r p-2">
-                  {item?.answer.length > 1 ? (
+                  {item?.answer?.length > 1 ? (
                     <input
                       type="text"
                       className="input input-bordered text-center max-w-[128px]"
@@ -193,8 +193,8 @@ const Home = () => {
                       disabled={showAnswer}
                     >
                       <option key={`${item?.id}-null`}></option>
-                      {item?.answer.toLocaleLowerCase() !== "o" &&
-                      item?.answer.toLocaleLowerCase() !== "x"
+                      {item?.answer?.toLocaleLowerCase() !== "o" &&
+                      item?.answer?.toLocaleLowerCase() !== "x"
                         ? ENG_OPITIONS.map((it) => (
                             <option key={`${item?.id}-${it}`}>{it}</option>
                           ))
@@ -219,7 +219,7 @@ const Home = () => {
                         : "bg-error"
                     }  max-w-[56px] flex flex-1 justify-center items-center ml-auto text-white font-bold`}
                   >
-                    {item?.answer.toUpperCase()}
+                    {item?.answer?.toUpperCase()}
                   </div>
                 )}
               </li>
