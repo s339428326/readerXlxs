@@ -13,6 +13,13 @@ const Home = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [topicList, setTopicList] = useState([]);
   const [userAnswer, setUserAnswer] = useState();
+
+  const [analyzeTabData, setAnalyzeTabData] = useState({
+    passQuantity: 0,
+    passPercentage: 0,
+    notice: false,
+  });
+
   const xlxsData = useRef([]);
   const resetBtnRef = useRef();
 
@@ -116,21 +123,39 @@ const Home = () => {
     console.log("對答案", data);
     setUserAnswer(data);
 
+    // 更新紀錄版
+    const passItems = topicList.filter(
+      (item) =>
+        item?.answer?.toLocaleLowerCase() ===
+        data?.[item?.id]?.toLocaleLowerCase()
+    );
+
+    setAnalyzeTabData((pre) => ({ ...pre, passQuantity: passItems.length }));
+
     //顯示對答案模式
     setShowAnswer(true);
   };
 
   return (
     <main className="container mx-auto">
-      <section className="my-10 border p-5 rounded-md sticky top-1 backdrop-blur-sm shadow-lg z-30">
+      <section className="flex flex-col gap-2 my-10 border p-5 rounded-md sticky top-1 backdrop-blur-sm shadow-lg z-30">
         {/* function bar */}
         <div className="flex justify-between">
           <h1 name="head" className="font-bold text-2xl mb-2">
             隨機題目抽測
           </h1>
-          <Link to="/analyze" className="btn btn-sm btn-active">
-            歷史測驗結果
-          </Link>
+          <div className="flex gap-2">
+            <button
+              ref={resetBtnRef}
+              onClick={handleReset}
+              className="btn btn-sm btn-active"
+            >
+              重新測驗
+            </button>
+            <Link to="/analyze" className="btn btn-sm btn-active">
+              歷史測驗結果
+            </Link>
+          </div>
         </div>
         <div className="flex gap-2">
           <input
@@ -156,15 +181,71 @@ const Home = () => {
             />
           </label>
         </div>
+        {/* 統計分數面板 */}
+        <div className="stats shadow backdrop-blur-sm bg-transparent">
+          <div className="stat">
+            <div className="stat-figure text-secondary"></div>
+            <div className="stat-title">答對題數</div>
+            <div className="stat-value"> </div>
+            {!topicList?.length ? (
+              <small className="my-auto mx-auto font-bold">未讀取檔案</small>
+            ) : showAnswer ? (
+              <div className="stat-value">
+                {analyzeTabData?.passQuantity} / {testOpition?.topicLength}
+              </div>
+            ) : (
+              <small className="my-auto mx-auto font-bold">未作答完成</small>
+            )}
+          </div>
 
-        <div className="flex gap-2">
-          <button
-            ref={resetBtnRef}
-            onClick={handleReset}
-            className="btn btn-sm btn-active"
-          >
-            重新測驗
-          </button>
+          <div className="stat">
+            <div className="stat-figure text-secondary"></div>
+            <div className="stat-title">百分比</div>
+
+            {!topicList?.length ? (
+              <small className="my-auto mx-auto font-bold">未讀取檔案</small>
+            ) : showAnswer ? (
+              <div className="stat-value">
+                <p
+                  className={`${
+                    analyzeTabData?.passQuantity / testOpition?.topicLength >
+                    0.9
+                      ? "text-success"
+                      : "text-error"
+                  }`}
+                >
+                  {(
+                    (analyzeTabData?.passQuantity / testOpition?.topicLength) *
+                    100
+                  ).toFixed(2)}
+                  %
+                </p>
+              </div>
+            ) : (
+              <small className="my-auto mx-auto font-bold">未作答完成</small>
+            )}
+            {/* <div className="stat-desc">↗︎ 400 (22%)</div> */}
+          </div>
+
+          <div className="stat">
+            <div className="stat-figure text-secondary"></div>
+            <div className="stat-title">評比(是否高於90%)</div>
+            {!topicList?.length ? (
+              <small className="my-auto mx-auto font-bold">未讀取檔案</small>
+            ) : showAnswer ? (
+              <div className="stat-value">
+                {analyzeTabData?.passQuantity / testOpition?.topicLength >
+                0.9 ? (
+                  <small className="text-success">通過</small>
+                ) : (
+                  <small className="text-error">重測</small>
+                )}
+              </div>
+            ) : (
+              <small className="my-auto mx-auto font-bold">未作答完成</small>
+            )}
+          </div>
+          {/* <div className="stat-desc">↘︎ 90 (14%)</div> */}
         </div>
 
         {/* Timmer  https://daisyui.com/components/countdown/*/}
