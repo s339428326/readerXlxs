@@ -100,6 +100,7 @@ const Home = () => {
       xlxsData.current = list;
       setTestOpition((pre) => ({ ...pre, topicLength: list.length }));
       setTopicList(() => shuffle(xlxsData.current));
+      handleReset();
     };
   };
 
@@ -213,7 +214,7 @@ const Home = () => {
                   // success error
                   <div
                     className={`${
-                      userAnswer?.[item?.id].toLocaleLowerCase() ===
+                      userAnswer?.[item?.id]?.toLocaleLowerCase() ===
                       item?.answer
                         ? "bg-success"
                         : "bg-error"
