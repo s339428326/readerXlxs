@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import shuffle from "../utils/shuffle";
 import AnalyzeBar from "./AnalyzeBar";
@@ -7,6 +7,9 @@ import AnalyzeBar from "./AnalyzeBar";
 import { read } from "xlsx";
 
 const InputFileHeader = ({
+  watch,
+  userAnswer,
+  setUserAnswer,
   showAnswer,
   setShowAnswer,
   testOpition,
@@ -14,27 +17,65 @@ const InputFileHeader = ({
   topicList,
   setTopicList,
   analyzeTabData,
+  failItems,
   reset,
 }) => {
   //timmer
-  const [createAt, setCreateAt] = useState();
-  const [timmer, setTimmer] = useState();
+  //   const [createAt, setCreateAt] = useState();
+  //   const [timmer, setTimmer] = useState();
+
+  const navigator = useNavigate();
 
   const resetBtnRef = useRef();
+  const headerRef = useRef();
 
   const xlxsData = useRef([]);
   let fileName = "";
+
+  const handleToAnalyze = () => {
+    if (!showAnswer && topicList.length > 0)
+      return document.getElementById("error_modal")?.showModal();
+    navigator("/analyze");
+  };
 
   //重新匯入檔案
   const handleReset = () => {
     reset(); //hook empty
     setShowAnswer(false); // disable answer view
-    setTopicList(shuffle(xlxsData.current)); //random topic
-    setTestOpition((pre) => ({ ...pre, disabled: false }));
+    //random topic
+    setTopicList(
+      shuffle(xlxsData.current).map((it, index) => ({
+        ...it,
+        topicNumber: index,
+      }))
+    );
+
+    setUserAnswer([]);
 
     window.scrollTo({
       left: 0,
       top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  //move fail topic
+  const handleFailTopicMove = (topicId, index) => (e) => {
+    console.log(topicId);
+    const failTopic = document?.querySelector(`#topic-${topicId}`);
+    if (!failTopic) return;
+    const failTopicBound = failTopic.getBoundingClientRect();
+    const headerBound = headerRef.current.getBoundingClientRect();
+
+    if (failTopicBound.top === 0) return;
+
+    window.scrollTo({
+      top:
+        window.scrollY +
+        failTopicBound.top -
+        headerBound.height -
+        40 -
+        innerHeight * 0.25,
       behavior: "smooth",
     });
   };
@@ -47,6 +88,7 @@ const InputFileHeader = ({
     //reader
     const reader = new FileReader();
     fileName = e.target?.files[0].name;
+    console.log("fileName", fileName);
     reader.readAsArrayBuffer(e.target.files[0]);
 
     reader.onload = function () {
@@ -55,6 +97,7 @@ const InputFileHeader = ({
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const list = [];
 
+      console.log("sheet", sheet);
       //format sheet to list array
       console.log(sheet?.["!ref"]);
       console.log(sheet?.["!ref"].split(":"));
@@ -80,14 +123,29 @@ const InputFileHeader = ({
       //view data
       xlxsData.current = list;
 
-      setTestOpition((pre) => ({ ...pre, topicLength: list.length }));
-      setTopicList(shuffle(xlxsData.current));
+      const radom = shuffle(xlxsData.current).map((it, index) => ({
+        ...it,
+        topicNumber: index,
+      }));
+
+      console.log(radom);
+
+      setTestOpition((pre) => ({
+        ...pre,
+        topicLength: list.length,
+        fileName: e.target?.files[0].name,
+      }));
+      setTopicList(radom);
       handleReset();
     };
   };
 
   return (
-    <header className="flex flex-col gap-2 my-10 border p-5 rounded-md sticky top-1 backdrop-blur-sm shadow-lg z-30 container mx-auto">
+    //
+    <header
+      ref={headerRef}
+      className="flex flex-col gap-2 my-10 border p-5 rounded-md sticky top-1 backdrop-blur-sm shadow-lg z-30 container mx-auto"
+    >
       <div className="flex justify-between">
         <h1 name="head" className="font-bold text-2xl mb-2">
           隨機題目抽測
@@ -101,9 +159,9 @@ const InputFileHeader = ({
             重新測驗
           </button>
           {/* 未填寫題目出現於bar下方, 可以轉跳 */}
-          <Link to="/analyze" className="btn btn-sm btn-active">
+          <button onClick={handleToAnalyze} className="btn btn-sm btn-active">
             歷史測驗結果
-          </Link>
+          </button>
         </div>
       </div>
       <div className="flex gap-2">
@@ -138,6 +196,37 @@ const InputFileHeader = ({
         analyzeTabData={analyzeTabData}
       />
       {/* Timmer  https://daisyui.com/components/countdown/*/}
+      {showAnswer && (
+        <ul className="flex flex-wrap gap-2 overflow-y-scroll max-h-[162px]">
+          {failItems.map((item, index) => (
+            <li key={`fail-${item?.id}`}>
+              <button
+                onClick={handleFailTopicMove(item?.id, index)}
+                className="btn btn-error text-white w-[48px]"
+              >
+                {item?.index + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <dialog id="error_modal" className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+              ✕
+            </button>
+          </form>
+          <h3 className="font-bold text-lg">未作答完成</h3>
+          <p className="py-4">目前未作答完成, 確定要前往數據頁面!</p>
+          <button
+            onClick={() => navigator("/analyze")}
+            className="flex ml-auto btn"
+          >
+            前往
+          </button>
+        </div>
+      </dialog>
     </header>
   );
 };

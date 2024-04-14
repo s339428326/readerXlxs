@@ -9,12 +9,14 @@ const Home = () => {
   const LIMIT_PASS_PERCENTAGE = 90;
 
   const [testOpition, setTestOpition] = useState({
+    fileName: "",
     topicLength: "",
   });
   //
   const [showAnswer, setShowAnswer] = useState(false);
   const [topicList, setTopicList] = useState([]);
   const [userAnswer, setUserAnswer] = useState();
+  const [failItems, setFailItems] = useState([]);
 
   const [analyzeTabData, setAnalyzeTabData] = useState({
     passQuantity: 0,
@@ -43,6 +45,7 @@ const Home = () => {
       top: 0,
       behavior: "smooth",
     });
+
     //錯誤題目紀錄於local
     console.log("對答案", data);
     setUserAnswer(data);
@@ -54,13 +57,12 @@ const Home = () => {
         (item) =>
           item?.answer?.toLocaleLowerCase() !==
           data?.[item?.id]?.toLocaleLowerCase()
-      );
+      )
+      .map((it, index) => ({ ...it, index }));
 
-    // const passItems = topicList.filter(
-    //   (item) =>
-    //     item?.answer?.toLocaleLowerCase() ===
-    //     data?.[item?.id]?.toLocaleLowerCase()
-    // );
+    console.log("failItems", failItems);
+    setFailItems(failItems);
+
     const passLength = testOpition?.topicLength - failItems?.length;
 
     const passPercentage = (
@@ -77,11 +79,42 @@ const Home = () => {
 
     //顯示對答案模式
     setShowAnswer(true);
+
+    //
+
+    if (localData?.[testOpition?.fileName]) {
+      localData?.[`${testOpition?.fileName}`].push({
+        id: new Date(),
+        timeAt: Date.now(),
+        failItems,
+      });
+
+      console.log("pre in", localData);
+
+      localStorage.setItem("randomXLXS", JSON.stringify(localData));
+    } else {
+      localStorage.setItem(
+        "randomXLXS",
+        JSON.stringify({
+          ...localData,
+          [`${testOpition?.fileName}`]: [
+            {
+              id: new Date(),
+              timeAt: Date.now(),
+              failItems,
+            },
+          ],
+        })
+      );
+    }
   };
 
   return (
     <>
       <InputFileHeader
+        watch={watch}
+        userAnswer={userAnswer}
+        setUserAnswer={setUserAnswer}
         showAnswer={showAnswer}
         setShowAnswer={setShowAnswer}
         testOpition={testOpition}
@@ -89,9 +122,11 @@ const Home = () => {
         topicList={topicList}
         setTopicList={setTopicList}
         analyzeTabData={analyzeTabData}
+        failItems={failItems}
         reset={reset}
       />
       <main className="container mx-auto">
+        {JSON.stringify()}
         <section>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
             <TopicList

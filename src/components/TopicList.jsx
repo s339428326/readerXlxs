@@ -1,17 +1,19 @@
-export const TopicItem = ({
-  item,
-  index,
-  showAnswer,
-  userAnswer,
-  register,
-}) => {
+export const TopicItem = ({ item, showAnswer, userAnswer, register }) => {
   const ENG_OPITIONS = ["A", "B", "C", "D", "E"];
   const OX_OPITIONS = ["O", "X"];
   return (
-    <li key={index} className="flex rounded-md border overflow-hidden">
+    <li
+      id={`topic-${item?.id}`}
+      className="flex rounded-md border overflow-hidden"
+    >
       {/* Ans. box */}
+      <div className="w-[48px] border-r flex items-center justify-center">
+        {`${item?.topicNumber + 1}`}
+      </div>
       <div className="border-r p-2">
-        {item?.answer?.length > 1 ? (
+        {![...ENG_OPITIONS, ...OX_OPITIONS].find(
+          (it) => it?.toLocaleLowerCase() === item?.answer?.toLocaleLowerCase()
+        ) ? (
           <input
             type="text"
             className="input input-bordered text-center max-w-[128px]"
@@ -63,15 +65,15 @@ const TopicList = ({
   showAnswer,
   userAnswer,
   register,
-  children,
 }) => {
   // Bug: one Chinese length to input not select
   return (
     <ul className="flex flex-col gap-2 p-2">
-      {topicList.slice(0, testOpition.topicLength).map((item, index) => (
+      {topicList.slice(0, testOpition.topicLength).map((item) => (
         <TopicItem
+          key={`topic-${item?.id}`}
           item={item}
-          index={index}
+          topicNumber={item?.topicNumber}
           showAnswer={showAnswer}
           userAnswer={userAnswer}
           register={register}
