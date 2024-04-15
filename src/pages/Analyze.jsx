@@ -10,7 +10,7 @@ const Analyze = () => {
 
   const [chartData, setCharData] = useState();
   const localData = JSON.parse(localStorage.getItem("randomXLXS"));
-  const selectList = Object.keys(localData).map((it) => it);
+  const selectList = localData ? Object.keys(localData)?.map((it) => it) : [];
 
   const failItemTopTen = (currentTopic) => {
     const failItemsCount = {};
@@ -31,6 +31,7 @@ const Analyze = () => {
   };
 
   useEffect(() => {
+    if (!selectList.length) return;
     setHistory(selectList);
     setHistoryData({
       labels: Object?.entries(localData[selectList[0]])?.map(([key, val]) =>
