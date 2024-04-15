@@ -204,7 +204,7 @@ const InputFileHeader = ({
                 onClick={handleFailTopicMove(item?.id, index)}
                 className="btn btn-error text-white w-[48px]"
               >
-                {item?.index + 1}
+                {item?.topicNumber + 1}
               </button>
             </li>
           ))}

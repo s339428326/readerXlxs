@@ -86,6 +86,8 @@ const Home = () => {
       localData?.[`${testOpition?.fileName}`].push({
         id: new Date(),
         timeAt: Date.now(),
+        passPercentage,
+        length: testOpition?.topicLength,
         failItems,
       });
 
@@ -101,6 +103,8 @@ const Home = () => {
             {
               id: new Date(),
               timeAt: Date.now(),
+              passPercentage,
+              length: testOpition?.topicLength,
               failItems,
             },
           ],

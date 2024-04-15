@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Line } from "react-chartjs-2";
 
@@ -45,6 +45,7 @@ const LineChart = ({ data }) => {
   //   "June",
   //   "July",
   // ];
+
   // const data = {
   //   labels,
   //   datasets: [
